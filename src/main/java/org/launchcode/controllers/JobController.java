@@ -1,12 +1,12 @@
 package org.launchcode.controllers;
 
-import org.launchcode.models.Employer;
 import org.launchcode.models.Job;
 import org.launchcode.models.forms.JobForm;
 import org.launchcode.models.data.JobData;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -38,32 +38,25 @@ public class JobController {
     }
 
     @RequestMapping(value = "add", method = RequestMethod.POST)
-    public String add(Model model, @Valid JobForm jobForm, Errors errors) {
+    public String add(@ModelAttribute @Valid JobForm jobForm, Errors errors, Model model) {
 
         // TODO #6 - Validate the JobForm model, and if valid, create a
         // new Job and add it to the jobData data store. Then
         // redirect to the job detail view for the new Job.
-
         Job newJob = new Job();
+
+        if (errors.hasErrors()) {
+            return "new-job";
+        } else {
+            model.addAttribute("job", newJob);
+        }
+
         newJob.setName(jobForm.getName());
-
-        //Somehow I need to get the correct Employer object by using the int id I have, and make sure
-        //it matches the id of the correct Employer, and I'll save that Employer to the newJob object
-
         newJob.setEmployer(jobData.getEmployers().findById(jobForm.getEmployerId()));
         newJob.setLocation(jobData.getLocations().findById(jobForm.getLocationId()));
         newJob.setPositionType(jobData.getPositionTypes().findById(jobForm.getPositionTypeId()));
         newJob.setCoreCompetency(jobData.getCoreCompetencies().findById(jobForm.getCoreCompetencyId()));
 
-        //Get Employ by id and save it to newJob
-
-
-        if (errors.hasErrors()) {
-            model.addAttribute(new JobForm());
-            return "new-job";
-        } else {
-            model.addAttribute("job", newJob);
-        }
 
         jobData.add(newJob);
         return "redirect:/job?id=" + newJob.getId();
